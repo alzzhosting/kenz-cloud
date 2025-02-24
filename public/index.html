@@ -3,159 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uploader File By Kenz</title>
+    <title>Cloud Uploader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --background: #f8fafc;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #6c5ce7 0%, #a8a4e6 100%);
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 500px;
-            transition: transform 0.3s ease;
+            text-align: center;
         }
 
-        .container:hover {
-            transform: translateY(-5px);
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
         }
 
-        h1 {
-            color: #2d3436;
-            margin-bottom: 1.5rem;
-            font-size: 1.8em;
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .icon {
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .icon:hover {
+            color: var(--primary);
         }
 
         .upload-box {
-            border: 2px dashed #a8a4e6;
-            padding: 2rem;
-            cursor: pointer;
-            border-radius: 15px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 3rem 2rem;
             margin: 1.5rem 0;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            background: #f8f9fa;
         }
 
         .upload-box:hover {
-            background: #fff;
-            border-color: #6c5ce7;
+            border-color: var(--primary);
+            background: #f8fafc;
         }
 
         .upload-box.dragover {
-            background: #e6e6fa;
-            border-color: #4b4bff;
+            border-color: var(--primary);
+            background: #f1f5f9;
         }
 
         .cloud-icon {
-            font-size: 3.5rem;
-            color: #6c5ce7;
+            font-size: 3rem;
+            color: var(--primary);
             margin-bottom: 1rem;
         }
 
         .upload-text {
-            color: #636e72;
-            font-size: 1.1em;
+            color: #64748b;
+            margin: 0.5rem 0;
+        }
+
+        .upload-text small {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        #fileInput {
+            display: none;
         }
 
         .btn {
-            background: #6c5ce7;
+            background: var(--primary);
             color: white;
-            padding: 12px 25px;
+            padding: 0.75rem 2rem;
             border: none;
-            border-radius: 25px;
+            border-radius: 0.5rem;
             cursor: pointer;
-            font-size: 1em;
+            font-weight: 500;
             transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            width: 100%;
+            margin-top: 1rem;
         }
 
         .btn:hover {
-            background: #5b4bc4;
-            transform: scale(1.05);
-        }
-
-        .btn i {
-            font-size: 1.2em;
+            background: var(--primary-hover);
+            transform: translateY(-2px);
         }
 
         #fileName {
+            color: #475569;
+            font-size: 0.9rem;
             margin: 1rem 0;
-            color: #636e72;
-            font-size: 0.9em;
         }
 
         #status {
-            margin-top: 1.5rem;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: 500;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
 
         .success {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .error {
-            background: #ffebee;
-            color: #c62828;
+            background: #fee2e2;
+            color: #991b1b;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .stats {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Cloud File Upload</h1>
-        <div class="upload-box" id="dropZone" 
-             ondragover="handleDragOver(event)" 
-             ondragleave="handleDragLeave(event)" 
-             ondrop="handleDrop(event)">
+        <header>
+            <div class="brand">Cloud</div>
+            <div class="icons">
+                <i class="fas fa-cog icon"></i>
+                <i class="fab fa-github icon"></i>
+            </div>
+        </header>
+        
+        <div class="upload-box" id="dropZone">
             <i class="fas fa-cloud-upload-alt cloud-icon"></i>
             <div class="upload-text">
-                Drag and drop your file here or click to browse
+                Upload Your Files<br>
+                <small>Drag and drop files here or click to browse</small>
             </div>
         </div>
+        
         <div id="fileName"></div>
-        <input type="file" id="fileInput" hidden>
+        <input type="file" id="fileInput">
         <button class="btn" onclick="uploadFile()">
             <i class="fas fa-upload"></i>
-            Upload File
+            Choose File
         </button>
+        
+        <div class="stats">
+            Maximum upload file size: 100MB
+        </div>
+        
         <p id="status"></p>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const status = document.getElementById('status');
+
+        // Handle drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        // Handle file input
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) handleFile(fileInput.files[0]);
+        });
+
+        function handleFile(file) {
+            fileName.textContent = `Selected file: ${file.name}`;
+        }
+
+        async function uploadFile() {
+            if (!fileInput.files.length) {
+                showStatus('Please select a file first!', 'error');
+                return;
+            }
+
+            const btn = document.querySelector('.btn');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                showStatus(`File uploaded successfully! <a href="${data.url}" target="_blank">View file</a>`, 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Upload failed. Please try again.', 'error');
+            } finally {
+                btn.innerHTML = `<i class="fas fa-upload"></i> Choose File`;
+                btn.disabled = false;
+            }
+        }
+
+        function showStatus(message, type) {
+            status.className = type;
+            status.innerHTML = message;
+        }
+    </script>
 </body>
 </html>
