@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cloud Uploader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -93,82 +94,6 @@
             font-size: 0.875rem;
             margin-top: 2rem;
         }
-
-        /* POPUP STYLE */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .popup {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            text-align: center;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .popup-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .popup-message {
-            color: #475569;
-            margin-bottom: 1rem;
-        }
-
-        .popup button {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .popup button:hover {
-            background: var(--primary-hover);
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .popup-close:hover {
-            color: var(--primary);
-        }
-
-        .popup-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .popup-overlay.show .popup {
-            transform: scale(1);
-        }
     </style>
 </head>
 <body>
@@ -187,22 +112,10 @@
         <div class="stats">Maximum upload file size: 100MB</div>
     </div>
 
-    <!-- POPUP MODAL -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup">
-            <span class="popup-close" onclick="closePopup()">&times;</span>
-            <div class="popup-header">Upload Status</div>
-            <div class="popup-message" id="popupMessage"></div>
-            <button onclick="closePopup()">OK</button>
-        </div>
-    </div>
-
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileName = document.getElementById('fileName');
-        const popupOverlay = document.getElementById('popupOverlay');
-        const popupMessage = document.getElementById('popupMessage');
 
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', () => {
@@ -215,7 +128,11 @@
 
         async function uploadFile() {
             if (!fileInput.files.length) {
-                showPopup('Please select a file first!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Oops...',
+                    text: 'Please select a file first!',
+                });
                 return;
             }
 
@@ -233,24 +150,24 @@
                 });
 
                 const data = await response.json();
-                showPopup(`File uploaded successfully! <a href="${data.url}" target="_blank">View file</a>`);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Upload Successful!',
+                    html: `File uploaded successfully! <br> <a href="${data.url}" target="_blank">View file</a>`,
+                });
             } catch (error) {
                 console.error('Error:', error);
-                showPopup('Upload failed. Please try again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed!',
+                    text: 'Something went wrong, please try again.',
+                });
             } finally {
                 btn.innerHTML = `<i class="fas fa-upload"></i> Choose File`;
                 btn.disabled = false;
             }
         }
-
-        function showPopup(message) {
-            popupMessage.innerHTML = message;
-            popupOverlay.classList.add('show');
-        }
-
-        function closePopup() {
-            popupOverlay.classList.remove('show');
-        }
     </script>
 </body>
-        </html>
+</html>
