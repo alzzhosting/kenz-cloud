@@ -37,34 +37,6 @@
             text-align: center;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .brand {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .icons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .icon {
-            color: #64748b;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .icon:hover {
-            color: var(--primary);
-        }
-
         .upload-box {
             border: 2px dashed #cbd5e1;
             border-radius: 0.75rem;
@@ -79,29 +51,10 @@
             background: #f8fafc;
         }
 
-        .upload-box.dragover {
-            border-color: var(--primary);
-            background: #f1f5f9;
-        }
-
         .cloud-icon {
             font-size: 3rem;
             color: var(--primary);
             margin-bottom: 1rem;
-        }
-
-        .upload-text {
-            color: #64748b;
-            margin: 0.5rem 0;
-        }
-
-        .upload-text small {
-            color: #94a3b8;
-            font-size: 0.875rem;
-        }
-
-        #fileInput {
-            display: none;
         }
 
         .btn {
@@ -128,73 +81,91 @@
             margin: 1rem 0;
         }
 
-        #status {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .success {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
         .stats {
             color: #64748b;
             font-size: 0.875rem;
             margin-top: 2rem;
         }
 
-        /* Popup */
-        .popup {
+        /* POPUP STYLE */
+        .popup-overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .popup {
             background: white;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
             border-radius: 0.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
             text-align: center;
-            display: none;
-            z-index: 1000;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
         }
 
-        .popup.success {
-            border-left: 5px solid #16a34a;
+        .popup-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
 
-        .popup.error {
-            border-left: 5px solid #dc2626;
+        .popup-message {
+            color: #475569;
+            margin-bottom: 1rem;
         }
 
         .popup button {
-            margin-top: 1rem;
             background: var(--primary);
             color: white;
+            padding: 0.5rem 1.5rem;
             border: none;
-            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .popup button:hover {
+            background: var(--primary-hover);
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .popup-close:hover {
+            color: var(--primary);
+        }
+
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-overlay.show .popup {
+            transform: scale(1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="brand">Cloud</div>
-            <div class="icons">
-                <i class="fas fa-cog icon"></i>
-                <i class="fab fa-github icon"></i>
-            </div>
-        </header>
-        
         <div class="upload-box" id="dropZone">
             <i class="fas fa-cloud-upload-alt cloud-icon"></i>
             <div class="upload-text">
@@ -204,44 +175,31 @@
         </div>
         
         <div id="fileName"></div>
-        <input type="file" id="fileInput">
+        <input type="file" id="fileInput" style="display: none;">
         <button class="btn" onclick="uploadFile()">
             <i class="fas fa-upload"></i>
             Choose File
         </button>
-        
-        <div class="stats">
-            Maximum upload file size: 100MB
-        </div>
 
-        <p id="status"></p>
+        <div class="stats">Maximum upload file size: 100MB</div>
     </div>
 
-    <!-- Popup -->
-    <div id="popup" class="popup">
-        <p id="popupMessage"></p>
-        <button onclick="closePopup()">Close</button>
+    <!-- POPUP MODAL -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+            <div class="popup-header">Upload Status</div>
+            <div class="popup-message" id="popupMessage"></div>
+            <button onclick="closePopup()">OK</button>
+        </div>
     </div>
 
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileName = document.getElementById('fileName');
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-        });
+        const popupOverlay = document.getElementById('popupOverlay');
+        const popupMessage = document.getElementById('popupMessage');
 
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', () => {
@@ -253,7 +211,10 @@
         }
 
         async function uploadFile() {
-            if (!fileInput.files.length) return showPopup("Please select a file!", "error");
+            if (!fileInput.files.length) {
+                showPopup('Please select a file first!');
+                return;
+            }
 
             const btn = document.querySelector('.btn');
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
@@ -263,27 +224,29 @@
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
 
-                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
                 const data = await response.json();
-                showPopup(`File uploaded! <a href="${data.url}" target="_blank">View file</a>`, "success");
-            } catch {
-                showPopup("Upload failed. Try again.", "error");
+                showPopup(`File uploaded successfully! <a href="${data.url}" target="_blank">View file</a>`);
+            } catch (error) {
+                console.error('Error:', error);
+                showPopup('Upload failed. Please try again.');
             } finally {
                 btn.innerHTML = `<i class="fas fa-upload"></i> Choose File`;
                 btn.disabled = false;
             }
         }
 
-        function showPopup(msg, type) {
-            const popup = document.getElementById("popup");
-            document.getElementById("popupMessage").innerHTML = msg;
-            popup.className = `popup ${type}`;
-            popup.style.display = "block";
-            setTimeout(() => popup.style.display = "none", 3000);
+        function showPopup(message) {
+            popupMessage.innerHTML = message;
+            popupOverlay.classList.add('show');
         }
 
         function closePopup() {
-            document.getElementById("popup").style.display = "none";
+            popupOverlay.classList.remove('show');
         }
     </script>
 </body>
