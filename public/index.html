@@ -151,47 +151,37 @@
             margin-top: 2rem;
         }
 
-        /* Pop-up modal */
+        /* Popup */
         .popup {
-            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .popup-content {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: white;
-            padding: 2rem;
-            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 0.5rem;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
         }
 
-        .popup-buttons {
+        .popup.success {
+            border-left: 5px solid #16a34a;
+        }
+
+        .popup.error {
+            border-left: 5px solid #dc2626;
+        }
+
+        .popup button {
             margin-top: 1rem;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .popup .btn {
-            padding: 0.5rem 1.5rem;
-            border: none;
-            cursor: pointer;
-        }
-
-        .popup .cancel {
-            background: #e53e3e;
+            background: var(--primary);
             color: white;
-        }
-
-        .popup .cancel:hover {
-            background: #c53030;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -223,31 +213,35 @@
         <div class="stats">
             Maximum upload file size: 100MB
         </div>
-        
+
         <p id="status"></p>
     </div>
 
-    <!-- Pop-up konfirmasi -->
+    <!-- Popup -->
     <div id="popup" class="popup">
-        <div class="popup-content">
-            <p>Apakah kamu yakin ingin mengupload file ini?</p>
-            <div class="popup-buttons">
-                <button id="confirmUpload" class="btn">Ya, Upload</button>
-                <button id="cancelUpload" class="btn cancel">Batal</button>
-            </div>
-        </div>
+        <p id="popupMessage"></p>
+        <button onclick="closePopup()">Close</button>
     </div>
 
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileName = document.getElementById('fileName');
-        const status = document.getElementById('status');
-        const popup = document.getElementById("popup");
-        const confirmUploadBtn = document.getElementById("confirmUpload");
-        const cancelUploadBtn = document.getElementById("cancelUpload");
 
-        let fileToUpload = null;
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
 
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', () => {
@@ -258,31 +252,39 @@
             fileName.textContent = `Selected file: ${file.name}`;
         }
 
-        function uploadFile() {
-            if (!fileInput.files.length) {
-                showStatus("Pilih file dulu sebelum upload!", "error");
-                return;
-            }
+        async function uploadFile() {
+            if (!fileInput.files.length) return showPopup("Please select a file!", "error");
 
-            fileToUpload = fileInput.files[0];
-            popup.style.display = "flex";
+            const btn = document.querySelector('.btn');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await response.json();
+                showPopup(`File uploaded! <a href="${data.url}" target="_blank">View file</a>`, "success");
+            } catch {
+                showPopup("Upload failed. Try again.", "error");
+            } finally {
+                btn.innerHTML = `<i class="fas fa-upload"></i> Choose File`;
+                btn.disabled = false;
+            }
         }
 
-        confirmUploadBtn.addEventListener("click", async () => {
-            popup.style.display = "none";
-            if (!fileToUpload) return;
-            showStatus("Upload berhasil!", "success");
-        });
+        function showPopup(msg, type) {
+            const popup = document.getElementById("popup");
+            document.getElementById("popupMessage").innerHTML = msg;
+            popup.className = `popup ${type}`;
+            popup.style.display = "block";
+            setTimeout(() => popup.style.display = "none", 3000);
+        }
 
-        cancelUploadBtn.addEventListener("click", () => {
-            popup.style.display = "none";
-            fileToUpload = null;
-        });
-
-        function showStatus(message, type) {
-            status.className = type;
-            status.innerHTML = message;
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
         }
     </script>
 </body>
-            </html>
+</html>
