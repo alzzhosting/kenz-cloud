@@ -57,6 +57,19 @@
             margin-bottom: 1rem;
         }
 
+        .upload-text {
+            font-size: 1rem;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        #fileName {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+
         .btn {
             background: var(--primary);
             color: white;
@@ -73,12 +86,6 @@
         .btn:hover {
             background: var(--primary-hover);
             transform: translateY(-2px);
-        }
-
-        #fileName {
-            color: #475569;
-            font-size: 0.9rem;
-            margin: 1rem 0;
         }
 
         .stats {
@@ -168,17 +175,13 @@
     <div class="container">
         <div class="upload-box" id="dropZone">
             <i class="fas fa-cloud-upload-alt cloud-icon"></i>
-            <div class="upload-text">
-                Upload Your Files<br>
-                <small>Drag and drop files here or click to browse</small>
-            </div>
+            <div class="upload-text">Upload Your Files</div>
+            <div id="fileName"></div>
         </div>
         
-        <div id="fileName"></div>
         <input type="file" id="fileInput" style="display: none;">
         <button class="btn" onclick="uploadFile()">
-            <i class="fas fa-upload"></i>
-            Choose File
+            <i class="fas fa-upload"></i> Choose File
         </button>
 
         <div class="stats">Maximum upload file size: 100MB</div>
@@ -207,7 +210,7 @@
         });
 
         function handleFile(file) {
-            fileName.textContent = `Selected file: ${file.name}`;
+            fileName.innerHTML = `<br>📄 <strong>${file.name}</strong>`;
         }
 
         async function uploadFile() {
@@ -250,4 +253,4 @@
         }
     </script>
 </body>
-</html>
+        </html>
